@@ -1,2 +1,3 @@
-# django_admin_csv_upload
+# Django admin CSV Upload
 CSV upload in Django admin
+
