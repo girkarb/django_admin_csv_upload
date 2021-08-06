@@ -10,11 +10,14 @@ git clone https://github.com/girkarb/django_admin_csv_upload.git
 ```bash
 python manage.py runserver
 ``` 
-4)Use below credentials to access admin panel
+4)Use below credentials to access admin panel:
 Username: admin
 Password: admin@123
 
 5)Select Student Model 
-6)Click on: IMPORT CSV
-7)Choose student.csv file do modification in it and upload it.
-8)Check the records in Student file.
+
+6)Click on: IMPORT CSV link to upload the csv file.
+
+7)Choose student.csv file from the repository and do the modification as per your requirement and upload it.
+
+8)Check the records in Student Model.
