@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from . import models
+from .admin_view import StudentAdminManager, ChildManager
 from .models import Student, LearningObjective, Payment, Child
 import csv
 import datetime
@@ -44,20 +44,23 @@ class StudentAdmin(admin.ModelAdmin):
     def goToNotify(self, obj):
 
         return format_html(
-            '<a class="button" href="/admin/projectApp/student/update_notify/%s" target="blank">Notify</a>&nbsp;' % (obj.pk))
+            '<a class="button" href="/admin/projectApp/student/update_notify/%s">Notify</a>&nbsp;' % (
+                obj.pk))
 
     goToNotify.short_description = 'Notify'
     goToNotify.allow_tags = True
 
     def updateProfileReviewed(self, request, stud_id):
-        Student.objects.filter(id=stud_id).update(status='Reviewed')
-        url = reverse('admin:index')
-        return HttpResponseRedirect(url)
+        obj = StudentAdminManager().updateProfileReviewed(stud_id)
+        if obj ==True:
+            url = reverse('admin:index')
+            return HttpResponseRedirect(url)
 
     def updateNotify(self, request, stud_id):
-        Student.objects.filter(id=stud_id).update(status='Notify')
-        url = reverse('admin:index')
-        return HttpResponseRedirect(url)
+        obj = StudentAdminManager().updateNotify(stud_id)
+        if obj == True:
+            url = reverse('admin:index')
+            return HttpResponseRedirect(url)
 
     def import_csv(self, request):
         """
@@ -70,38 +73,10 @@ class StudentAdmin(admin.ModelAdmin):
             file_data = csv_file.read().decode("utf-8")
             lines = file_data.split("\n")
             del lines[0]  # to delete header
-            for line in lines:
-                if line:
-                    fields = line.split(",")
-                    try:
-                        is_exist = Student.objects.get(id=fields[0])
-                    except Exception as e:
-                        is_exist = None
-                    if is_exist is None:
-                        Student.objects.create(
-                            id=fields[0].strip(),
-                            stud_id=fields[1].strip(),
-                            fname=fields[2].strip(),
-                            lname=fields[3].strip(),
-                            gender=fields[4].strip(),
-                            age=fields[5].strip(),
-                            status='Created'
-
-                        )
-                    else:
-                        stud_obj = Student.objects.get(id=fields[0])
-                        Student.objects.filter(id=fields[0]).update(
-                            stud_id=fields[1].strip(),
-                            fname=fields[2].strip(),
-                            lname=fields[3].strip(),
-                            gender=fields[4].strip(),
-                            age=fields[5].strip(),
-                            status=stud_obj.status
-
-                        )
-
-            url = reverse('admin:index')
-            return HttpResponseRedirect(url)
+            obj = StudentAdminManager().import_csv(lines)
+            if obj == True:
+                url = reverse('admin:index')
+                return HttpResponseRedirect(url)
 
         form = CsvImportForm()
         payload = {"form": form}
@@ -140,56 +115,11 @@ class ChildAdmin(admin.ModelAdmin):
             file_data = csv_file.read().decode("utf-8", errors='ignore')
             lines = file_data.split("\n")
             del lines[0]  # to delete header
-            for line in lines:
-                if line:
-                    fields = line.split(",")
-                    dict_val = {fields[6].split(":")[0]: fields[6].split(":")[1],
-                                fields[7].split(":")[0]: fields[7].split(":")[1],
-                                fields[8].split(":")[0]: fields[8].split(":")[1],
-                                fields[9].split(":")[0]: fields[9].split(":")[1],
-                                fields[10].split(":")[0]: fields[9].split(":")[1],
-                                fields[11].split(":")[0]: fields[11].split(":")[1],
-                                fields[12].split(":")[0]: fields[12].split(":")[1]}
-                    code_list = [fields[6].split(":")[0], fields[7].split(":")[0], fields[8].split(":")[0],
-                                 fields[9].split(":")[0], fields[10].split(":")[0], fields[11].split(":")[0],
-                                 fields[12].split(":")[0]]
-                    for k, v in dict_val.items():
-                        try:
-                            if k and v:
-                                LearningObjective.objects.get_or_create(code=k, description=v, status=1,
-                                                                        added_on=str(datetime.datetime.now()),
-                                                                        updated_on=str(datetime.datetime.now()))
-                        except Exception as e:
-                            print(e)
-                    try:
-                        learning_obj = LearningObjective.objects.filter(code__in=code_list)
-                        child_instance = Child.objects.get_or_create(
-                            name=fields[2].strip(),
-                            parent_name='NA',
-                            mobile=fields[13].strip(),
-                            email=fields[1].strip(),
-                            grade='NA',
-                            teacher_allocated=fields[3].strip(),
-                            current_teacher='NA',
-                            sales_manager='NA',
-                            lsq_id='NA',
-                            last_active_date=str(datetime.datetime.now()),
-                            ptm_status=0,
-                            last_ptm_date=str(datetime.datetime.now()),
-                            batch_name='NA',
-                            course_name=fields[5].strip(),
-                            sessions_credited=fields[14].strip(),
-                            start_date=fields[4].strip(),
-                            status=1,
-                            added_on=str(datetime.datetime.now()),
-                            updated_on=str(datetime.datetime.now()),
-                            timestamp=str(fields[0].strip()),
-                        )
-                        child_instance.learning_objective.set(tuple(learning_obj))
-                    except Exception as e:
-                        print(e)
-            url = reverse('admin:index')
-            return HttpResponseRedirect(url)
+            obj = ChildManager().csv_import(lines)
+            if obj ==True:
+                url = reverse('admin:index')
+                return HttpResponseRedirect(url)
+
 
         form = CsvImportForm()
         payload = {"form": form}
