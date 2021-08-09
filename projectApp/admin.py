@@ -126,7 +126,7 @@ class ChildAdmin(admin.ModelAdmin):
         """
 
         urls = super().get_urls()
-        child_import_csv = [path('child_import_csv/', self.child_import_csv), ]
+        child_import_csv = [path('import-csv/', self.child_import_csv), ]
         return child_import_csv + urls
 
     def child_import_csv(self, request):
@@ -135,7 +135,6 @@ class ChildAdmin(admin.ModelAdmin):
         :param request:
         :return:
         """
-
         if request.method == "POST":
             csv_file = request.FILES["csv_file"]
             file_data = csv_file.read().decode("utf-8", errors='ignore')
@@ -156,40 +155,39 @@ class ChildAdmin(admin.ModelAdmin):
                                  fields[12].split(":")[0]]
                     for k, v in dict_val.items():
                         try:
-                            LearningObjective.objects.get_or_create(code=k, description=v, status=1,
-                                                                    added_on=str(datetime.datetime.now()),
-                                                                    updated_on=str(datetime.datetime.now()))
+                            if k and v:
+                                LearningObjective.objects.get_or_create(code=k, description=v, status=1,
+                                                                        added_on=str(datetime.datetime.now()),
+                                                                        updated_on=str(datetime.datetime.now()))
                         except Exception as e:
                             print(e)
-                    learning_obj = LearningObjective.objects.filter(code__in=code_list)
-                    Child.objects.create(
-                        name=fields[2].strip(),
-                        parent_name='NA',
-                        mobile=fields[13].strip(),
-                        email=fields[1].strip(),
-                        grade='NA',
-                        teacher_allocated=fields[3].strip(),
-                        current_teacher='NA',
-                        sales_manager='NA',
-                        lsq_id='NA',
-                        last_active_date='NA',
-                        ptm_status='NA',
-                        last_ptm_date='NA',
-                        batch_name='NA',
-                        course_name=fields[5].strip(),
-                        sessions_credited=fields[14].strip(),
-                        allowed_total_classes='NA',
-                        taken_total_classes='NA',
-                        remaining_classes='NA',
-                        start_date=fields[4].strip(),
-                        end_date=fields[1].strip(),
-                        status='NA',
-                        added_on='NA',
-                        updated_on='NA',
-                        timestamp=fields[0].strip(),
-                        learning_objective=learning_obj,
-                    )
-
+                    try:
+                        learning_obj = LearningObjective.objects.filter(code__in=code_list)
+                        child_instance = Child.objects.get_or_create(
+                            name=fields[2].strip(),
+                            parent_name='NA',
+                            mobile=fields[13].strip(),
+                            email=fields[1].strip(),
+                            grade='NA',
+                            teacher_allocated=fields[3].strip(),
+                            current_teacher='NA',
+                            sales_manager='NA',
+                            lsq_id='NA',
+                            last_active_date=str(datetime.datetime.now()),
+                            ptm_status=0,
+                            last_ptm_date=str(datetime.datetime.now()),
+                            batch_name='NA',
+                            course_name=fields[5].strip(),
+                            sessions_credited=fields[14].strip(),
+                            start_date=fields[4].strip(),
+                            status=1,
+                            added_on=str(datetime.datetime.now()),
+                            updated_on=str(datetime.datetime.now()),
+                            timestamp=str(fields[0].strip()),
+                        )
+                        child_instance.learning_objective.set(tuple(learning_obj))
+                    except Exception as e:
+                        print(e)
             url = reverse('admin:index')
             return HttpResponseRedirect(url)
 
@@ -204,7 +202,8 @@ class LearningObjectiveAdmin(admin.ModelAdmin):
 
 
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = [f.name for f in Payment._meta.get_fields()]
+    # list_display = [f.name for f in Payment._meta.get_fields()]
+    list_display = ('child_name', 'total_fees')
 
 
 admin.site.register(LearningObjective, LearningObjectiveAdmin)
