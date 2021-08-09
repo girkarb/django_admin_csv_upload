@@ -1,64 +1,38 @@
 import datetime
 
-from projectApp.models import Student, LearningObjective, Child
+from projectApp.models import LearningObjective, Child
 
 
-class StudentAdminManager:
+class ChildManager:
 
     def updateProfileReviewed(self, stud_id):
+        """
+        Update Child Profile.
+        :param stud_id:
+        :return:
+        """
         if stud_id:
-            Student.objects.filter(id=stud_id).update(status='Reviewed')
+            Child.objects.filter(id=stud_id).update(status=1)
             return True
         return False
 
     def updateNotify(self, stud_id):
-        if stud_id:
-            Student.objects.filter(id=stud_id).update(status='Notify')
-            return True
-        return False
-
-    def import_csv(self, obj):
         """
-        To write data from csv to student model.
-        :param request:
+        For Notification
+        :param stud_id:
         :return:
         """
-        if obj:
-            for line in obj:
-                if line:
-                    fields = line.split(",")
-                    try:
-                        is_exist = Student.objects.get(id=fields[0])
-                    except Exception as e:
-                        is_exist = None
-                    if is_exist is None:
-                        Student.objects.create(
-                            id=fields[0].strip(),
-                            stud_id=fields[1].strip(),
-                            fname=fields[2].strip(),
-                            lname=fields[3].strip(),
-                            gender=fields[4].strip(),
-                            age=fields[5].strip(),
-                            status='Created'
-                        )
-                    else:
-                        stud_obj = Student.objects.get(id=fields[0])
-                        Student.objects.filter(id=fields[0]).update(
-                            stud_id=fields[1].strip(),
-                            fname=fields[2].strip(),
-                            lname=fields[3].strip(),
-                            gender=fields[4].strip(),
-                            age=fields[5].strip(),
-                            status=stud_obj.status
-
-                        )
+        if stud_id:
+            Child.objects.filter(id=stud_id).update(status=1)
             return True
         return False
 
-class ChildManager:
-
     def csv_import(self, obj):
-
+        """
+        To te csv data in child and learning objective model.
+        :param obj:
+        :return:
+        """
         if obj:
             for line in obj:
                 if line:
@@ -106,7 +80,7 @@ class ChildManager:
                             course_name=fields[5].strip(),
                             sessions_credited=fields[14].strip(),
                             start_date=str(fields[4]),
-                            status=1,
+                            status=0,
                             added_on=str(datetime.datetime.now()),
                             updated_on=str(datetime.datetime.now()),
                             timestamp=str(fields[0].strip()),
