@@ -1,7 +1,7 @@
 from django.db import models
 
 """
-This  model will contain Student information
+This  model will contain sample information
 """
 # Create your models here.
 class LearningObjective(models.Model):
