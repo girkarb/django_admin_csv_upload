@@ -15,7 +15,7 @@ class LearningAdmin(admin.ModelAdmin):
 
 
 class ChildAdmin(admin.ModelAdmin):
-    list_display = ('name', 'parent_name', 'goToProfileReviewed', 'goToNotify')
+    list_display = ('name', 'parent_name', 'status', 'goToProfileReviewed', 'goToNotify')
 
     def get_urls(self):
         """
@@ -33,7 +33,7 @@ class ChildAdmin(admin.ModelAdmin):
     def goToProfileReviewed(self, obj):
 
         return format_html(
-            '<a class="button" href="/admin/projectApp/child/update_reviewed/%s" target="blank">Profile '
+            '<a class="button" href="/admin/projectApp/child/update_reviewed/%s">Profile '
             'Reviewed</a>&nbsp;' % (obj.pk))
 
     goToProfileReviewed.short_description = 'ProfileReviewed'
